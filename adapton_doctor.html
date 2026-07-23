@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdaptON 의사용</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- QR 코드 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --blue:#1B4FD8; --blue-light:#EFF6FF; --blue-mid:#BFDBFE;
+  --green-light:#F0FDF4; --green:#16A34A;
+  --red:#DC2626; --red-light:#FEF2F2;
+  --orange:#EA580C; --orange-light:#FFF7ED;
+  --bg:#F8FAFF; --surface:#FFFFFF;
+  --border:#E2E8F0; --text:#0F172A; --muted:#64748B;
+  --radius:14px; --radius-sm:8px;
+  --sidebar-w:240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.btn{font-family:'Noto Sans KR',sans-serif;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border:1.5px solid transparent}
+.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:#1740b0}
+.btn-outline{background:transparent;color:var(--text);border-color:var(--border)}.btn-outline:hover{background:var(--bg)}
+.btn-ghost{background:var(--bg);color:var(--muted);border-color:var(--border)}.btn-ghost:hover{background:#e2e8f0}
+.btn-danger{background:var(--red);color:white}.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:7px 12px;font-size:13px}
+.input-field{width:100%;font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--text);background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;transition:border-color 0.15s}
+.input-field:focus{outline:none;border-color:var(--blue);background:white}
+textarea{width:100%;resize:vertical;min-height:120px;font-family:'Noto Sans KR',sans-serif;font-size:14px;line-height:1.7;color:var(--text);background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;transition:border-color 0.15s}
+textarea:focus{outline:none;border-color:var(--blue);background:white}
+.label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.hint{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5}
+.hint a{color:var(--blue);text-decoration:none}
+.form-row{margin-bottom:18px}
+.char-count{text-align:right;font-size:11px;color:var(--muted);margin-top:4px}
+.alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;margin-top:10px}
+.alert-success{background:var(--green-light);color:var(--green);border:1px solid #BBF7D0}
+.alert-error{background:var(--red-light);color:var(--red);border:1px solid #FECACA}
+.alert-info{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-mid)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500}
+.badge-blue{background:var(--blue-light);color:var(--blue)}.badge-green{background:var(--green-light);color:var(--green)}.badge-orange{background:var(--orange-light);color:var(--orange)}
+.divider{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.divider-line{flex:1;height:1px;background:var(--border)}.divider-text{font-size:12px;color:var(--muted)}
+.screen{display:none}.screen.active{display:block}
+.loading-card{text-align:center;padding:60px 24px}
+.loader{width:44px;height:44px;border:3px solid var(--blue-light);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:keep-all}
+.result-box.original{color:var(--muted);font-size:13px}
+.steps{display:flex;align-items:center;margin-bottom:24px}
+.step{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.step.active{color:var(--blue)}.step.done{color:var(--green)}
+.step-num{width:24px;height:24px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.step.done .step-num{background:var(--green);border-color:var(--green);color:white}
+.step.active .step-num{background:var(--blue);border-color:var(--blue);color:white}
+.step-line{flex:1;height:1px;background:var(--border);margin:0 8px}
+.mic-section{display:flex;flex-direction:column;align-items:center;padding:20px 0 14px;gap:12px}
+.mic-btn{width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:26px;transition:all 0.2s}
+.mic-btn.idle{background:var(--blue-light);border:2px solid var(--blue-mid)}.mic-btn.idle:hover{transform:scale(1.05)}
+.mic-btn.recording{background:var(--red-light);border:2px solid #FECACA;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(220,38,38,0.3)}50%{transform:scale(1.06);box-shadow:0 0 0 10px rgba(220,38,38,0)}}
+.mic-label{font-size:13px;color:var(--muted);text-align:center}.mic-label.recording{color:var(--red);font-weight:500}
+
+/* SIDEBAR */
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:250;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.sidebar-overlay.open{opacity:1;pointer-events:all}
+.sidebar{position:fixed;left:0;top:0;height:100vh;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);z-index:260;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.sidebar.open{transform:translateX(0)}
+.sidebar-head{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sidebar-logo{font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--blue)}
+.sidebar-close{width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:20px;color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:6px}
+.sidebar-close:hover{background:var(--bg)}
+.sidebar-nav{padding:12px 10px;flex:1}
+.sidebar-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);border:none;background:transparent;width:100%;text-align:left;transition:all 0.15s;margin-bottom:2px}
+.sidebar-item:hover{background:var(--blue-light);color:var(--blue)}
+.sidebar-item.active{background:var(--blue-light);color:var(--blue)}
+.sidebar-item .icon{font-size:18px;width:24px;text-align:center}
+.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border)}
+
+/* HEADER */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:200}
+.hamburger{width:36px;height:36px;border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:8px;transition:background 0.15s}
+.hamburger:hover{background:var(--bg)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px}
+.header-logo{font-family:'DM Sans',sans-serif;font-size:17px;font-weight:700;color:var(--blue);letter-spacing:-0.3px}
+.header-role{font-size:11px;background:#EDE9FE;color:#7C3AED;padding:2px 8px;border-radius:999px;font-weight:600}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px;position:relative}
+.user-btn{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:13px;font-weight:500;color:var(--text);transition:all 0.15s}
+.user-btn:hover{background:var(--bg);border-color:var(--blue-mid)}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:var(--blue);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.dropdown{position:absolute;top:calc(100% + 8px);right:0;width:180px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 8px 24px rgba(0,0,0,0.1);overflow:hidden;display:none;z-index:300}
+.dropdown.open{display:block}
+.dropdown-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13px;color:var(--text);cursor:pointer;transition:background 0.1s;border:none;background:transparent;width:100%;text-align:left}
+.dropdown-item:hover{background:var(--bg)}
+.dropdown-item.danger{color:var(--red)}
+.dropdown-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* CONTENT */
+.app-content{max-width:780px;width:100%;margin:0 auto;padding:28px 24px}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#EDE9FE 0%,#F8FAFF 60%,#EFF6FF 100%)}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px 36px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(124,58,237,0.1)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .mark{width:60px;height:60px;background:linear-gradient(135deg,#7C3AED,var(--blue));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px}
+.tabs-2{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:24px}
+.tab-2{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all 0.15s;margin-bottom:-1.5px}
+.tab-2.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* QR */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;padding:20px 0}
+#qrcode{margin:0 auto}
+#qrcode canvas, #qrcode img{border-radius:8px}
+.timer-bar{width:100%;background:var(--border);border-radius:999px;height:8px;margin-top:16px;overflow:hidden}
+.timer-fill{height:100%;background:var(--orange);border-radius:999px;transition:width 1s linear}
+
+/* RECORD LIST */
+.record-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.record-item-info{flex:1;min-width:0}
+.record-item-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.record-item-date{font-size:12px;color:var(--muted)}
+.expired-badge{font-size:11px;background:#FEE2E2;color:var(--red);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.active-badge{font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:999px;white-space:nowrap}
+
+footer{text-align:center;padding:18px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);background:var(--surface)}
+@media(max-width:600px){.app-content{padding:16px}.card{padding:16px}.app-header{padding:0 16px}.login-card{padding:28px 20px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#EDE9FE 0%,#F8FAFF 60%,#EFF6FF 100%)">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px 36px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(124,58,237,0.1)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,#7C3AED,#1B4FD8);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px">🩺</div>
+      <strong style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px">AdaptON</strong>
+      <p style="font-size:13px;color:var(--muted);margin-top:6px">의료진 전용 포털</p>
+      <span style="font-size:11px;background:#EDE9FE;color:#7C3AED;padding:3px 10px;border-radius:999px;font-weight:600;margin-top:6px;display:inline-block">👨‍⚕️ 의사 계정</span>
+    </div>
+    <div class="tabs-2">
+      <button class="tab-2 active" id="tabLoginBtn">로그인</button>
+      <button class="tab-2" id="tabSignupBtn">회원가입</button>
+    </div>
+    <div id="formLogin">
+      <div class="form-row">
+        <label class="label">이메일</label>
+        <input type="email" class="input-field" id="loginEmail" placeholder="doctor@hospital.com" />
+      </div>
+      <div class="form-row">
+        <label class="label">비밀번호</label>
+        <input type="password" class="input-field" id="loginPw" placeholder="비밀번호 입력" />
+      </div>
+      <div id="loginAlert"></div>
+      <button class="btn btn-primary" id="btnLogin" style="width:100%;justify-content:center;padding:12px;font-size:15px;margin-top:8px">로그인</button>
+      <p style="text-align:center;font-size:13px;margin-top:14px">
+        <a id="linkReset" href="#" style="color:var(--blue);text-decoration:none">비밀번호 찾기</a>
+      </p>
+    </div>
+    <div id="formSignup" style="display:none">
+      <div class="form-row">
+        <label class="label">이름 (의사명)</label>
+        <input type="text" class="input-field" id="signupName" placeholder="홍길동" />
+      </div>
+      <div class="form-row">
+        <label class="label">소속 병원</label>
+        <input type="text" class="input-field" id="signupHospital" placeholder="서울대학교병원" />
+      </div>
+      <div class="form-row">
+        <label class="label">이메일</label>
+        <input type="email" class="input-field" id="signupEmail" placeholder="doctor@hospital.com" />
+      </div>
+      <div class="form-row">
+        <label class="label">비밀번호</label>
+        <input type="password" class="input-field" id="signupPw" placeholder="6자 이상" />
+      </div>
+      <div id="signupAlert"></div>
+      <button class="btn btn-primary" id="btnSignup" style="width:100%;justify-content:center;padding:12px;font-size:15px;margin-top:8px">회원가입</button>
+      <p style="text-align:center;font-size:12px;margin-top:10px;color:var(--muted)">가입 후 이메일 인증이 필요해요</p>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appPage" style="display:none;flex-direction:column;min-height:100vh">
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <span class="sidebar-logo">🩺 AdaptON</span>
+      <button class="sidebar-close" id="btnCloseSidebar">✕</button>
+    </div>
+    <div class="sidebar-nav">
+      <button class="sidebar-item" data-page="home" id="sidebarHome"><span class="icon">🏠</span>홈</button>
+      <button class="sidebar-item active" data-page="convert" id="sidebarConvert"><span class="icon">✨</span>의학 용어 변환</button>
+      <button class="sidebar-item" data-page="records" id="sidebarRecords"><span class="icon">📋</span>변환 기록</button>
+      <button class="sidebar-item" data-page="mypage" id="sidebarMypage"><span class="icon">⚙️</span>마이페이지</button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="sidebar-item" id="sidebarLogout" style="color:var(--red)"><span class="icon">🚪</span>로그아웃</button>
+    </div>
+  </nav>
+
+  <header class="app-header">
+    <button class="hamburger" id="btnHamburger"><span></span><span></span><span></span></button>
+    <span class="header-logo">🩺 AdaptON</span>
+    <span class="header-role">의사</span>
+    <div class="header-right">
+      <div class="user-btn" id="userBtn">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userName">-</span>
+        <span style="font-size:10px;color:var(--muted)">▾</span>
+      </div>
+      <div class="dropdown" id="userDropdown">
+        <button class="dropdown-item" id="ddMypage">⚙️ 마이페이지</button>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" id="ddLogout">🚪 로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-content">
+
+    <!-- ══ HOME ══ -->
+    <div id="page-home" class="screen">
+
+      <div style="text-align:center;padding:70px 20px 50px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:500px;height:500px;background:radial-gradient(circle,rgba(124,58,237,0.07) 0%,transparent 70%);pointer-events:none"></div>
+        <div style="width:96px;height:96px;background:linear-gradient(135deg,#7C3AED,#1B4FD8);border-radius:26px;display:flex;align-items:center;justify-content:center;font-size:48px;margin:0 auto 24px;box-shadow:0 12px 40px rgba(124,58,237,0.25)">🩺</div>
+        <h1 style="font-family:'DM Sans',sans-serif;font-size:46px;font-weight:700;color:var(--text);letter-spacing:-1.5px;margin-bottom:14px;line-height:1.1">Adapt<span style="color:var(--blue)">ON</span></h1>
+        <p style="font-size:16px;color:var(--muted);max-width:440px;margin:0 auto 32px;line-height:1.7">AI가 복잡한 의학 용어를 환자가 이해할 수 있는 쉬운 말로 변환해드려요.<br>짧은 진료 시간의 설명 격차를 해결합니다.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-primary" id="homeStartBtn" style="padding:12px 28px;font-size:15px">✨ 변환 시작하기</button>
+          <button class="btn btn-outline" id="homeAboutBtn" style="padding:12px 28px;font-size:15px">서비스 소개 ↓</button>
+        </div>
+      </div>
+
+      <!-- 기능 카드 -->
+      <div style="margin-bottom:48px">
+        <h2 style="font-size:22px;font-weight:700;margin-bottom:6px">AdaptON 의사용 기능</h2>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:28px">의료진을 위한 스마트 커뮤니케이션 도구</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+          <div class="card" style="padding:24px;transition:all 0.2s;cursor:default" onmouseover="this.style.borderColor='#BFDBFE';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='';this.style.transform=''">
+            <div style="font-size:28px;margin-bottom:12px">🎙️</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">음성 인식</h3>
+            <p style="font-size:13px;color:var(--muted);line-height:1.6">진료 중 발화를 실시간으로 텍스트로 변환해요</p>
+          </div>
+          <div class="card" style="padding:24px;transition:all 0.2s;cursor:default" onmouseover="this.style.borderColor='#BFDBFE';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='';this.style.transform=''">
+            <div style="font-size:28px;margin-bottom:12px">🤖</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">AI 쉬운말 변환</h3>
+            <p style="font-size:13px;color:var(--muted);line-height:1.6">Gemini AI가 의학 용어를 쉬운 한국어로 바꿔줘요</p>
+          </div>
+          <div class="card" style="padding:24px;transition:all 0.2s;cursor:default" onmouseover="this.style.borderColor='#BFDBFE';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='';this.style.transform=''">
+            <div style="font-size:28px;margin-bottom:12px">📱</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">QR 코드 생성</h3>
+            <p style="font-size:13px;color:var(--muted);line-height:1.6">변환 결과를 QR로 즉시 환자에게 전달해요</p>
+          </div>
+          <div class="card" style="padding:24px;transition:all 0.2s;cursor:default" onmouseover="this.style.borderColor='#BFDBFE';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='';this.style.transform=''">
+            <div style="font-size:28px;margin-bottom:12px">⏱️</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">24시간 자동 소멸</h3>
+            <p style="font-size:13px;color:var(--muted);line-height:1.6">환자 정보 보호를 위해 24시간 후 자동 삭제돼요</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 회사 소개 -->
+      <div id="aboutSection" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:44px;margin-bottom:32px">
+        <h2 style="font-size:22px;font-weight:700;margin-bottom:16px">AdaptON에 대하여</h2>
+        <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:14px">AdaptON은 국내 외래 진료의 평균 시간이 3분 26초에 불과하고, 전체 진료 대화의 43%에서 전문 의학 용어가 사용된다는 문제에서 출발했습니다. 환자들은 의사의 설명 중 평균 49.3%만 이해하며, 특히 50대 이상 고령층의 이해도는 더욱 낮습니다.</p>
+        <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:32px">의료진의 설명 부담을 줄이고, 환자가 진료 내용을 정확히 이해할 수 있는 환경을 만드는 것이 AdaptON의 사명입니다.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+          <div style="text-align:center">
+            <div style="font-family:'DM Sans',sans-serif;font-size:34px;font-weight:700;color:var(--blue);letter-spacing:-1px">43%</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">진료 대화 중<br>전문 용어 비율</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-family:'DM Sans',sans-serif;font-size:34px;font-weight:700;color:var(--blue);letter-spacing:-1px">49.3%</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">환자의 평균<br>이해도</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-family:'DM Sans',sans-serif;font-size:34px;font-weight:700;color:var(--blue);letter-spacing:-1px">3분</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">평균 외래<br>진료 시간</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 팀 소개 -->
+      <div style="margin-bottom:40px">
+        <h2 style="font-size:22px;font-weight:700;margin-bottom:6px">팀 소개</h2>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:24px">AdaptON을 만들어가는 사람들</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+          <div class="card" style="padding:24px;text-align:center">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#1B4FD8);color:white;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">이</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">이호열</h3>
+            <p style="font-size:12px;color:var(--muted)">서비스 기획 · 비즈니스</p>
+          </div>
+          <div class="card" style="padding:24px;text-align:center">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#1B4FD8);color:white;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">김</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">김주한</h3>
+            <p style="font-size:12px;color:var(--muted)">운영 · 마케팅</p>
+          </div>
+          <div class="card" style="padding:24px;text-align:center">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#1B4FD8);color:white;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">이</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">이건희</h3>
+            <p style="font-size:12px;color:var(--muted)">운영 · 마케팅</p>
+          </div>
+          <div class="card" style="padding:24px;text-align:center">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#1B4FD8);color:white;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">정</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">정규영</h3>
+            <p style="font-size:12px;color:var(--muted)">운영 · 마케팅</p>
+          </div>
+          <div class="card" style="padding:24px;text-align:center">
+            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#1B4FD8);color:white;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">이</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:4px">이효관</h3>
+            <p style="font-size:12px;color:var(--muted)">AI · 개발</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ CONVERT ══ -->
+    <div id="page-convert" class="screen active">
+
+      <div id="screen-main" class="screen active">
+        <div class="steps">
+          <div class="step active"><div class="step-num">1</div><span>진료 내용 입력</span></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="step-num">2</div><span>AI 변환</span></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="step-num">3</div><span>QR 생성</span></div>
+        </div>
+        <div class="card">
+          <div style="margin-bottom:16px">
+            <h2 style="font-size:18px;font-weight:700;margin-bottom:4px">진료 내용을 입력하세요</h2>
+            <p style="font-size:13px;color:var(--muted)">음성 입력 또는 직접 타이핑</p>
+          </div>
+          <div class="mic-section">
+            <button class="mic-btn idle" id="micBtn">🎙️</button>
+            <p class="mic-label" id="micLabel">버튼을 눌러 음성 입력 시작<br><small style="font-size:11px">(Chrome 브라우저 권장)</small></p>
+          </div>
+          <div class="divider"><div class="divider-line"></div><span class="divider-text">또는 직접 입력</span><div class="divider-line"></div></div>
+          <div class="form-row">
+            <label class="label">환자 이름 (선택)</label>
+            <input type="text" class="input-field" id="patientName" placeholder="예: 홍길동" />
+          </div>
+          <textarea id="inputText" placeholder="예: 환자분의 소견은 제2형 당뇨병으로, 인슐린 저항성과 췌장 베타세포 기능부전이 병태생리의 핵심입니다..."></textarea>
+          <div class="char-count"><span id="charCount">0</span>자</div>
+          <button class="btn btn-primary" id="btnConvert" style="width:100%;justify-content:center;padding:13px;font-size:15px;margin-top:16px">✨ 쉬운말로 변환 + QR 생성</button>
+        </div>
+        <div style="background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:var(--radius);padding:16px">
+          <p style="font-size:13px;font-weight:600;margin-bottom:4px">🔑 API 키 미설정 시</p>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">마이페이지에서 Gemini API 키를 입력해주세요</p>
+          <button class="btn btn-outline btn-sm" id="btnMock">📋 샘플 결과 보기</button>
+        </div>
+      </div>
+
+      <div id="screen-loading" class="screen">
+        <div class="card loading-card">
+          <div class="loader"></div>
+          <h2 style="font-size:17px;font-weight:600;margin-bottom:8px">AI가 변환 중...</h2>
+          <p style="font-size:14px;color:var(--muted)">쉬운말로 변환하고 QR을 생성하고 있어요 ☕</p>
+        </div>
+      </div>
+
+      <div id="screen-result" class="screen">
+        <div class="steps">
+          <div class="step done"><div class="step-num">✓</div><span>입력 완료</span></div>
+          <div class="step-line"></div>
+          <div class="step done"><div class="step-num">✓</div><span>AI 변환</span></div>
+          <div class="step-line"></div>
+          <div class="step active"><div class="step-num">3</div><span>QR 생성</span></div>
+        </div>
+
+        <!-- QR 카드 -->
+        <div class="card" style="text-align:center">
+          <p style="font-size:15px;font-weight:600;margin-bottom:4px">📱 환자에게 QR을 보여주세요</p>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">QR은 5분간 유효해요. 환자가 스캔하면 진료 내용을 확인할 수 있어요</p>
+
+          <!-- QR 유효 상태 -->
+          <div id="qrActiveSection">
+            <div class="qr-wrap"><div id="qrcode"></div></div>
+            <div style="margin-top:14px">
+              <p style="font-size:13px;font-weight:600;color:var(--red)">⏱️ QR 만료까지: <span id="qrTimerText">5:00</span></p>
+              <div class="timer-bar" style="max-width:260px;margin:6px auto 0">
+                <div class="timer-fill" id="qrTimerFill" style="width:100%"></div>
+              </div>
+              <p style="font-size:11px;color:var(--muted);margin-top:6px">파일은 24시간 보관돼요. QR 만료 후 새 QR을 생성할 수 있어요.</p>
+            </div>
+          </div>
+
+          <!-- QR 만료 후 -->
+          <div id="qrExpiredSection" style="display:none;padding:20px 0">
+            <div style="font-size:40px;margin-bottom:10px">⏰</div>
+            <p style="font-size:15px;font-weight:600;margin-bottom:6px">QR이 만료되었어요</p>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">파일은 아직 유효해요. 새 QR을 생성하면 환자에게 다시 전달할 수 있어요.</p>
+            <button class="btn btn-primary" id="btnRegenerateQr">🔄 새 QR 생성</button>
+          </div>
+
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" id="btnCopyLink">🔗 링크 복사</button>
+            <button class="btn btn-danger btn-sm" id="btnStopQr">⏹ QR 중지</button>
+            <button class="btn btn-outline btn-sm" id="btnSpeak">🔊 읽어주기</button>
+            <button class="btn btn-outline btn-sm" id="btnStopSpeak">⏹ TTS 중지</button>
+          </div>
+
+          <div style="margin-top:12px;padding:10px 14px;background:var(--orange-light);border-radius:var(--radius-sm)">
+            <p style="font-size:12px;color:var(--orange)">📂 파일 보관: <span id="fileTimerText">24시간</span> 남음</p>
+          </div>
+        </div>
+
+        <!-- 변환 결과 미리보기 -->
+        <div class="card">
+          <p style="font-size:13px;font-weight:500;color:var(--muted);margin-bottom:8px">📄 변환 결과 미리보기</p>
+          <div class="result-box" id="resultDisplay" style="font-size:13px"></div>
+        </div>
+
+        <button class="btn btn-outline" id="btnReset" style="width:100%;justify-content:center">🔄 새로 변환하기</button>
+      </div>
+
+    </div>
+
+    <!-- ══ RECORDS ══ -->
+    <div id="page-records" class="screen">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:20px;font-weight:700">📋 변환 기록</h2>
+          <p style="font-size:13px;color:var(--muted);margin-top:2px">24시간 내 유효한 기록만 표시돼요</p>
+        </div>
+        <button class="btn btn-outline btn-sm" id="btnRefresh">🔄 새로고침</button>
+      </div>
+      <div id="recordsList"></div>
+    </div>
+
+    <!-- ══ MYPAGE ══ -->
+    <div id="page-mypage" class="screen">
+      <div style="margin-bottom:24px">
+        <h2 style="font-size:20px;font-weight:700">⚙️ 마이페이지</h2>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:18px">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,var(--blue));color:white;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0" id="mypageAvatar">?</div>
+        <div>
+          <h3 style="font-size:17px;font-weight:600" id="mypageName">-</h3>
+          <p style="font-size:13px;color:var(--muted)" id="mypageHospital">-</p>
+          <p style="font-size:12px;color:var(--muted)" id="mypageEmail">-</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">🔑 Gemini API 키</h3>
+        <div class="form-row">
+          <label class="label">API 키</label>
+          <input type="password" class="input-field" id="apiKeyInput" placeholder="AIzaSy..." />
+          <p class="hint">👉 <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a>에서 발급받을 수 있어요</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" id="btnSaveKey">저장</button>
+          <button class="btn btn-outline" id="btnClearKey">삭제</button>
+        </div>
+        <div id="settingsAlert"></div>
+      </div>
+    </div>
+
+  </div>
+  <footer>AdaptON 의사용 포털 — Chrome 브라우저 권장</footer>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         sendEmailVerification, sendPasswordResetEmail, onAuthStateChanged, signOut,
+         updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, setDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCtuiS-ZbN-IYgbU2uaAwq2yHcRWpQs6UY",
+  authDomain: "challenge-82d30.firebaseapp.com",
+  projectId: "challenge-82d30",
+  storageBucket: "challenge-82d30.firebasestorage.app",
+  messagingSenderId: "725547008897",
+  appId: "1:725547008897:web:beb24f4d6ba46ef7451e80"
+};
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// 환자 앱 URL — 같은 폴더에 있다고 가정
+const PATIENT_APP_URL = window.location.href.replace('cameleon_doctor.html','cameleon_patient.html');
+
+let currentUser = null;
+let lastResult = '', lastOriginal = '', lastRecordId = '';
+let recognition = null, isRecording = false;
+let timerInterval = null;
+
+// ── UTILS
+function showAlert(id, type, msg) { const el=document.getElementById(id); if(el) el.innerHTML=`<div class="alert alert-${type}">${msg}</div>`; }
+function getInitial(n) { return (n||'?').charAt(0).toUpperCase(); }
+
+// ── PAGES
+function showPage(name) {
+  document.querySelectorAll('[id^="page-"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name)?.classList.add('active');
+  document.querySelectorAll('.sidebar-item[data-page]').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.sidebar-item[data-page="${name}"]`)?.classList.add('active');
+  closeSidebar();
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(name==='records') renderRecords();
+  if(name==='convert') { document.querySelectorAll('#page-convert .screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-main')?.classList.add('active'); }
+  if(name==='mypage') {
+    document.getElementById('apiKeyInput').value = localStorage.getItem('cameleon_key')||'';
+    if(currentUser) {
+      document.getElementById('mypageName').textContent = currentUser.displayName||'-';
+      document.getElementById('mypageEmail').textContent = currentUser.email||'-';
+      loadDoctorProfile();
+    }
+  }
+}
+function showConvertScreen(name) {
+  document.querySelectorAll('#page-convert .screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name)?.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── SIDEBAR
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+document.getElementById('btnHamburger').addEventListener('click', openSidebar);
+document.getElementById('btnCloseSidebar').addEventListener('click', closeSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+document.querySelectorAll('.sidebar-item[data-page]').forEach(btn=>{
+  btn.addEventListener('click',()=>{ showPage(btn.dataset.page); });
+});
+
+document.getElementById('homeStartBtn')?.addEventListener('click',()=>showPage('convert'));
+document.getElementById('homeAboutBtn')?.addEventListener('click',()=>{ document.getElementById('aboutSection')?.scrollIntoView({behavior:'smooth'}); });
+document.getElementById('sidebarLogout').addEventListener('click', doLogout);
+
+// ── DROPDOWN
+document.getElementById('userBtn').addEventListener('click',(e)=>{ e.stopPropagation(); document.getElementById('userDropdown').classList.toggle('open'); });
+document.addEventListener('click',()=>document.getElementById('userDropdown').classList.remove('open'));
+document.getElementById('ddMypage').addEventListener('click',()=>{ document.getElementById('userDropdown').classList.remove('open'); showPage('mypage'); });
+document.getElementById('ddLogout').addEventListener('click',()=>{ document.getElementById('userDropdown').classList.remove('open'); doLogout(); });
+
+// ── AUTH
+async function enterApp(user) {
+  currentUser = user;
+  document.getElementById('loginPage').style.display  = 'none';
+  document.getElementById('appPage').style.display    = 'flex';
+  document.getElementById('appPage').style.flexDirection = 'column';
+  document.getElementById('appPage').style.minHeight  = '100vh';
+  document.getElementById('userName').textContent     = user.displayName||user.email;
+  document.getElementById('userAvatar').textContent   = getInitial(user.displayName||user.email);
+  showPage('home');
+  // 회원가입 시 저장 못한 병원 정보 지금 저장
+  const pendingHospital = localStorage.getItem('pending_hospital');
+  if (pendingHospital) {
+    try {
+      await setDoc(doc(db,'doctors',user.uid), {
+        name: user.displayName||'', hospital: pendingHospital,
+        email: user.email, role:'doctor', createdAt: Date.now()
+      }, {merge:true});
+      localStorage.removeItem('pending_hospital');
+    } catch(e){ console.error('프로필 저장 실패', e); }
+  }
+}
+
+async function doLogout() {
+  currentUser = null;
+  try { await signOut(auth); } catch(e){}
+  document.getElementById('appPage').style.display   = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+}
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    if (!user.emailVerified) { signOut(auth); return; }
+    enterApp(user);
+  }
+});
+
+// AUTH TABS
+document.getElementById('tabLoginBtn').addEventListener('click',()=>{ document.getElementById('tabLoginBtn').classList.add('active'); document.getElementById('tabSignupBtn').classList.remove('active'); document.getElementById('formLogin').style.display='block'; document.getElementById('formSignup').style.display='none'; });
+document.getElementById('tabSignupBtn').addEventListener('click',()=>{ document.getElementById('tabSignupBtn').classList.add('active'); document.getElementById('tabLoginBtn').classList.remove('active'); document.getElementById('formSignup').style.display='block'; document.getElementById('formLogin').style.display='none'; });
+
+document.getElementById('btnLogin').addEventListener('click', async()=>{
+  const email=document.getElementById('loginEmail').value.trim();
+  const pw=document.getElementById('loginPw').value;
+  if(!email||!pw){showAlert('loginAlert','error','이메일과 비밀번호를 입력해주세요.');return;}
+  try {
+    const cred=await signInWithEmailAndPassword(auth,email,pw);
+    if(!cred.user.emailVerified){await signOut(auth);showAlert('loginAlert','error','이메일 인증이 필요해요.');return;}
+    enterApp(cred.user);
+  } catch(e){ showAlert('loginAlert','error',e.code==='auth/invalid-credential'?'이메일 또는 비밀번호가 틀렸어요.':e.message); }
+});
+
+document.getElementById('btnSignup').addEventListener('click', async()=>{
+  const name=document.getElementById('signupName').value.trim();
+  const hospital=document.getElementById('signupHospital').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const pw=document.getElementById('signupPw').value;
+  if(!name||!hospital||!email||!pw){showAlert('signupAlert','error','모든 항목을 입력해주세요.');return;}
+  if(pw.length<6){showAlert('signupAlert','error','비밀번호는 6자 이상이어야 해요.');return;}
+  try {
+    const cred=await createUserWithEmailAndPassword(auth,email,pw);
+    await updateProfile(cred.user,{displayName:name});
+    // 인증 메일 먼저 발송
+    await sendEmailVerification(cred.user);
+    // 로그아웃
+    await signOut(auth);
+    // Firestore는 나중에 로그인 후 저장 (임시로 localStorage에 병원 정보 보관)
+    localStorage.setItem('pending_hospital', hospital);
+    showAlert('signupAlert','success','✅ 가입 완료! 이메일 인증 메일을 확인해주세요.');
+    setTimeout(()=>document.getElementById('tabLoginBtn').click(),2000);
+  } catch(e){ showAlert('signupAlert','error',e.code==='auth/email-already-in-use'?'이미 사용 중인 이메일이에요.':e.message); }
+});
+
+document.getElementById('linkReset').addEventListener('click',async(e)=>{
+  e.preventDefault();
+  const email=document.getElementById('loginEmail').value.trim();
+  if(!email){showAlert('loginAlert','error','이메일을 먼저 입력해주세요.');return;}
+  try{await sendPasswordResetEmail(auth,email);showAlert('loginAlert','success','✅ 재설정 이메일을 보냈어요!');}
+  catch(e){showAlert('loginAlert','error','전송 실패.');}
+});
+
+// ── 의사 프로필 로드
+async function loadDoctorProfile() {
+  if(!currentUser) return;
+  try {
+    const snap=await getDoc(doc(db,'doctors',currentUser.uid));
+    if(snap.exists()) {
+      const d=snap.data();
+      document.getElementById('mypageHospital').textContent = d.hospital||'-';
+    }
+  } catch(e){}
+}
+
+// ── MIC
+document.getElementById('micBtn').addEventListener('click',()=>isRecording?stopRecording():startRecording());
+function startRecording() {
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('Chrome 브라우저에서만 지원돼요.');return;}
+  recognition=new SR();recognition.lang='ko-KR';recognition.continuous=true;recognition.interimResults=true;
+  recognition.onresult=(e)=>{let t='';for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;document.getElementById('inputText').value=t;document.getElementById('charCount').textContent=t.length;};
+  recognition.onerror=()=>stopRecording();
+  recognition.onend=()=>{if(isRecording)recognition.start();};
+  recognition.start();isRecording=true;
+  document.getElementById('micBtn').className='mic-btn recording';
+  document.getElementById('micBtn').textContent='⏹️';
+  document.getElementById('micLabel').className='mic-label recording';
+  document.getElementById('micLabel').innerHTML='🔴 녹음 중...';
+}
+function stopRecording() {
+  if(recognition){recognition.onend=null;recognition.stop();}
+  isRecording=false;
+  document.getElementById('micBtn').className='mic-btn idle';
+  document.getElementById('micBtn').textContent='🎙️';
+  document.getElementById('micLabel').className='mic-label';
+  document.getElementById('micLabel').innerHTML='녹음 완료! 변환 버튼을 눌러주세요 👇';
+}
+document.getElementById('inputText').addEventListener('input',()=>{document.getElementById('charCount').textContent=document.getElementById('inputText').value.length;});
+
+// ── CONVERSION
+document.getElementById('btnConvert').addEventListener('click', async()=>{
+  const text=document.getElementById('inputText').value.trim();
+  if(!text){alert('변환할 내용을 입력해주세요.');return;}
+  const apiKey=localStorage.getItem('cameleon_key');
+  if(!apiKey){if(confirm('API 키가 없어요. 샘플 결과를 보시겠어요?'))useMockData();else showPage('mypage');return;}
+  showConvertScreen('loading');
+  const prompt=`당신은 의료 커뮤니케이션 전문가입니다.
+아래 의사의 진료 설명을 60대 이상 고령 환자가 이해하기 쉬운 한국어로 변환해주세요.
+
+[변환 규칙]
+1. 의학적 정확성 유지
+2. 어려운 용어는 "쉬운말(원래용어)" 형식으로 표기
+3. 경어체, 짧은 문장
+4. 아래 형식 그대로 출력:
+
+📋 요약
+(핵심 1~2문장)
+
+🔍 자세한 설명
+(쉬운말로 변환된 전체 내용)
+
+⚠️ 꼭 기억하세요
+(주의사항 2~3가지)
+
+💊 다음 진료까지 할 일
+(있으면 기재, 없으면 생략)
+
+[의사 진료 내용]
+${text}`;
+  try {
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {method:'POST',headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:1024}})});
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const result=data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if(!result)throw new Error('응답이 비어있어요.');
+    lastOriginal=text;lastResult=result;
+    await saveAndShowQR(text,result);
+  } catch(e){showConvertScreen('main');alert('오류: '+e.message);}
+});
+
+document.getElementById('btnMock').addEventListener('click', useMockData);
+async function useMockData() {
+  const t=document.getElementById('inputText').value.trim()||'환자분의 소견은 제2형 당뇨병으로, 인슐린 저항성과 췌장 베타세포 기능부전이 병태생리의 핵심입니다. 현재 당화혈색소 수치가 높아 미세혈관합병증 발생 가능성이 상당히 높습니다.';
+  const r=`📋 요약\n혈당이 잘 조절되지 않는 당뇨병(제2형)이 있으세요.\n\n🔍 자세한 설명\n몸이 인슐린을 잘 사용하지 못하는 상태예요.\n\n⚠️ 꼭 기억하세요\n• 처방받은 약을 드세요\n• 단 음식을 줄이세요\n• 규칙적으로 운동하세요`;
+  lastOriginal=t;lastResult=r;
+  await saveAndShowQR(t,r);
+}
+
+// ── 저장 + QR 생성
+let currentPatientUrl = '';
+let currentFileExpiresAt = 0;
+
+async function saveAndShowQR(original, result) {
+  const patientName=document.getElementById('patientName').value.trim()||'이름 미입력';
+  const fileExpiresAt=Date.now()+(24*60*60*1000); // 파일 24시간
+  currentFileExpiresAt=fileExpiresAt;
+
+  let recordId='';
+  try {
+    const docRef=await addDoc(collection(db,'shared_records'),{
+      uid: currentUser?.uid||'guest',
+      doctorName: currentUser?.displayName||'의사',
+      patientName, original, result,
+      createdAt: Date.now(),
+      expiresAt: fileExpiresAt,
+    });
+    recordId=docRef.id;
+    lastRecordId=recordId;
+  } catch(e){ console.error('저장 실패',e); recordId='preview'; }
+
+  currentPatientUrl=`${PATIENT_APP_URL}?id=${recordId}`;
+  document.getElementById('resultDisplay').textContent=result;
+
+  // 링크 복사
+  document.getElementById('btnCopyLink').onclick=()=>{
+    navigator.clipboard.writeText(currentPatientUrl).then(()=>alert('링크가 복사되었어요!'));
+  };
+
+  generateQrCode(currentPatientUrl, fileExpiresAt);
+  showConvertScreen('result');
+}
+
+function generateQrCode(url, fileExpiresAt) {
+  // QR 유효시간 5분
+  const qrExpiresAt = Date.now() + (5*60*1000);
+
+  document.getElementById('qrActiveSection').style.display='block';
+  document.getElementById('qrExpiredSection').style.display='none';
+
+  document.getElementById('qrcode').innerHTML='';
+  new QRCode(document.getElementById('qrcode'),{
+    text: url, width:200, height:200,
+    colorDark:'#1B4FD8', colorLight:'#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+  startQrTimer(qrExpiresAt, fileExpiresAt);
+}
+
+// QR 재생성 버튼
+document.getElementById('btnRegenerateQr').addEventListener('click',()=>{
+  if(currentPatientUrl) generateQrCode(currentPatientUrl, currentFileExpiresAt);
+});
+
+// QR 중지 버튼 - 수동으로 QR 종료
+document.getElementById('btnStopQr').addEventListener('click',()=>{
+  if(!confirm('QR을 중지할까요? 중지하면 환자가 더 이상 스캔할 수 없어요.')) return;
+  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+  document.getElementById('qrActiveSection').style.display='none';
+  document.getElementById('qrExpiredSection').style.display='block';
+});
+
+// ── TIMER: QR 5분 + 파일 24시간 분리
+function startQrTimer(qrExpiresAt, fileExpiresAt) {
+  if(timerInterval) clearInterval(timerInterval);
+  function update() {
+    const qrRemaining = qrExpiresAt - Date.now();
+    const fileRemaining = fileExpiresAt - Date.now();
+
+    // 파일 타이머
+    if(fileRemaining > 0) {
+      const fh=Math.floor(fileRemaining/3600000);
+      const fm=Math.floor((fileRemaining%3600000)/60000);
+      document.getElementById('fileTimerText').textContent=`${fh}시간 ${fm}분`;
+    } else {
+      document.getElementById('fileTimerText').textContent='만료됨';
+    }
+
+    // QR 타이머
+    if(qrRemaining <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('qrActiveSection').style.display='none';
+      document.getElementById('qrExpiredSection').style.display='block';
+      return;
+    }
+    const m=Math.floor(qrRemaining/60000);
+    const s=Math.floor((qrRemaining%60000)/1000);
+    document.getElementById('qrTimerText').textContent=`${m}:${String(s).padStart(2,'0')}`;
+    const pct=(qrRemaining/(5*60*1000))*100;
+    document.getElementById('qrTimerFill').style.width=pct+'%';
+    document.getElementById('qrTimerFill').style.background=pct>50?'var(--green)':pct>20?'var(--orange)':'var(--red)';
+  }
+  update();
+  timerInterval=setInterval(update,1000);
+}
+
+// ── TTS
+document.getElementById('btnSpeak').addEventListener('click',()=>{if(!lastResult)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(lastResult);u.lang='ko-KR';u.rate=0.88;speechSynthesis.speak(u);});
+document.getElementById('btnStopSpeak').addEventListener('click',()=>speechSynthesis.cancel());
+document.getElementById('btnReset').addEventListener('click',()=>{document.getElementById('inputText').value='';document.getElementById('charCount').textContent='0';lastResult='';lastOriginal='';currentPatientUrl='';currentFileExpiresAt=0;if(timerInterval)clearInterval(timerInterval);showConvertScreen('main');});
+
+// ── RECORDS
+async function renderRecords() {
+  const list=document.getElementById('recordsList');
+  list.innerHTML='<div class="card" style="text-align:center;padding:30px;color:var(--muted)">불러오는 중...</div>';
+  if(!currentUser){list.innerHTML='<div class="card" style="text-align:center;padding:30px;color:var(--muted)">로그인이 필요해요</div>';return;}
+  try {
+    const q=query(collection(db,'shared_records'),where('uid','==',currentUser.uid));
+    const snap=await getDocs(q);
+    const records=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    if(!records.length){list.innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--muted)">📭 변환 기록이 없어요</div>';return;}
+    const now=Date.now();
+    list.innerHTML=records.map(r=>{
+      const expired=r.expiresAt&&now>r.expiresAt;
+      const patientUrl=`${PATIENT_APP_URL}?id=${r.id}`;
+      return `<div class="record-item">
+        <div class="record-item-info">
+          <div class="record-item-name">👤 ${r.patientName}</div>
+          <div class="record-item-date">${new Date(r.createdAt).toLocaleString('ko-KR')}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${expired?'<span class="expired-badge">만료됨</span>':`<span class="active-badge">유효</span><button class="btn btn-outline btn-sm" onclick="copyLink('${patientUrl}')">🔗 링크</button>`}
+          <button class="btn btn-danger btn-sm" data-id="${r.id}">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+    list.addEventListener('click',async(e)=>{
+      const btn=e.target.closest('[data-id]');
+      if(btn){if(!confirm('삭제할까요?'))return;await deleteDoc(doc(db,'shared_records',btn.dataset.id));renderRecords();}
+    });
+  } catch(e){list.innerHTML=`<div class="alert alert-error">불러오기 실패: ${e.message}</div>`;}
+}
+window.copyLink=(url)=>navigator.clipboard.writeText(url).then(()=>alert('링크 복사됨!'));
+document.getElementById('btnRefresh').addEventListener('click',renderRecords);
+
+// ── API KEY
+document.getElementById('btnSaveKey').addEventListener('click',()=>{
+  const key=document.getElementById('apiKeyInput').value.trim();
+  if(!key){showAlert('settingsAlert','error','키를 입력해주세요.');return;}
+  if(!key.startsWith('AIza')){showAlert('settingsAlert','error','Gemini API 키는 "AIza"로 시작해요.');return;}
+  localStorage.setItem('cameleon_key',key);showAlert('settingsAlert','success','✅ 저장되었어요!');
+});
+document.getElementById('btnClearKey').addEventListener('click',()=>{
+  localStorage.removeItem('cameleon_key');document.getElementById('apiKeyInput').value='';showAlert('settingsAlert','success','삭제되었어요.');
+});
+</script>
+</body>
+</html>

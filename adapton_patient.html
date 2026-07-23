@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdaptON 환자용</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<style>
+:root {
+  --blue:#1B4FD8;--blue-light:#EFF6FF;--blue-mid:#BFDBFE;
+  --green-light:#F0FDF4;--green:#16A34A;
+  --red:#DC2626;--red-light:#FEF2F2;
+  --orange:#EA580C;--orange-light:#FFF7ED;
+  --bg:#F8FAFF;--surface:#FFFFFF;
+  --border:#E2E8F0;--text:#0F172A;--muted:#64748B;
+  --radius:14px;--radius-sm:8px;--sidebar-w:240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.btn{font-family:'Noto Sans KR',sans-serif;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border:1.5px solid transparent}
+.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:#1740b0}
+.btn-outline{background:transparent;color:var(--text);border-color:var(--border)}.btn-outline:hover{background:var(--bg)}
+.btn-ghost{background:var(--bg);color:var(--muted);border-color:var(--border)}.btn-ghost:hover{background:#e2e8f0}
+.btn-green{background:var(--green);color:white}.btn-green:hover{background:#15803d}
+.btn-danger{background:var(--red);color:white}.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:7px 12px;font-size:13px}
+.input-field{width:100%;font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--text);background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;transition:border-color 0.15s}
+.input-field:focus{outline:none;border-color:var(--green);background:white}
+.label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.form-row{margin-bottom:18px}
+.alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;margin-top:10px}
+.alert-success{background:var(--green-light);color:var(--green);border:1px solid #BBF7D0}
+.alert-error{background:var(--red-light);color:var(--red);border:1px solid #FECACA}
+.alert-info{background:var(--blue-light);color:var(--blue);border:1px solid var(--blue-mid)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:500}
+.badge-green{background:var(--green-light);color:var(--green)}.badge-orange{background:var(--orange-light);color:var(--orange)}
+.divider{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.divider-line{flex:1;height:1px;background:var(--border)}.divider-text{font-size:12px;color:var(--muted)}
+.screen{display:none}.screen.active{display:block}
+.loader{width:44px;height:44px;border:3px solid var(--blue-light);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;font-size:15px;line-height:1.9;color:var(--text);white-space:pre-wrap;word-break:keep-all}
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:250;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.sidebar-overlay.open{opacity:1;pointer-events:all}
+.sidebar{position:fixed;left:0;top:0;height:100vh;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);z-index:260;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.sidebar.open{transform:translateX(0)}
+.sidebar-head{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sidebar-logo{font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--green)}
+.sidebar-close{width:32px;height:32px;border:none;background:transparent;cursor:pointer;font-size:20px;color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:6px}
+.sidebar-close:hover{background:var(--bg)}
+.sidebar-nav{padding:12px 10px;flex:1}
+.sidebar-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--muted);border:none;background:transparent;width:100%;text-align:left;transition:all 0.15s;margin-bottom:2px}
+.sidebar-item:hover{background:var(--green-light);color:var(--green)}
+.sidebar-item.active{background:var(--green-light);color:var(--green)}
+.sidebar-item .icon{font-size:18px;width:24px;text-align:center}
+.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border)}
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:200}
+.hamburger{width:34px;height:34px;border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:8px}
+.hamburger:hover{background:var(--bg)}
+.hamburger span{display:block;width:18px;height:2px;background:var(--text);border-radius:2px}
+.header-logo{font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--green)}
+.header-role{font-size:11px;background:#DCFCE7;color:var(--green);padding:2px 8px;border-radius:999px;font-weight:600}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px;position:relative}
+.user-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:13px;font-weight:500;color:var(--text)}
+.user-btn:hover{background:var(--bg)}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:var(--green);color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.dropdown{position:absolute;top:calc(100% + 8px);right:0;width:170px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:0 8px 24px rgba(0,0,0,0.1);overflow:hidden;display:none;z-index:300}
+.dropdown.open{display:block}
+.dropdown-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13px;color:var(--text);cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.dropdown-item:hover{background:var(--bg)}
+.dropdown-item.danger{color:var(--red)}
+.dropdown-divider{height:1px;background:var(--border);margin:4px 0}
+.content{max-width:700px;width:100%;margin:0 auto;padding:24px 20px}
+.tabs-2{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:24px}
+.tab-2{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all 0.15s;margin-bottom:-1.5px}
+.tab-2.active{color:var(--green);border-bottom-color:var(--green)}
+.timer-bar{width:100%;background:var(--border);border-radius:999px;height:6px;margin-top:8px;overflow:hidden}
+.timer-fill{height:100%;background:var(--green);border-radius:999px;transition:width 1s linear}
+.saved-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s}
+.saved-item:hover{border-color:var(--blue-mid)}
+.saved-detail{display:none}.saved-detail.open{display:block}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px}
+.cal-day-label{text-align:center;font-size:11px;font-weight:500;color:var(--muted);padding:4px 0}
+.cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;cursor:pointer;position:relative;border:1px solid transparent}
+.cal-cell:hover{background:var(--green-light)}
+.cal-cell.today{background:var(--green);color:white;font-weight:700}
+.cal-cell.has-event{border-color:var(--orange)}
+.cal-cell.has-event::after{content:'';position:absolute;bottom:3px;width:5px;height:5px;border-radius:50%;background:var(--orange)}
+.cal-cell.other-month{color:var(--border);cursor:default}
+.qr-scan-box{border:3px dashed var(--green);border-radius:var(--radius);padding:40px 24px;text-align:center;background:var(--green-light);cursor:pointer;transition:all 0.2s}
+.qr-scan-box:hover{background:#dcfce7}
+.qr-video-wrap{position:relative;border-radius:var(--radius);overflow:hidden;background:black;margin-bottom:14px;display:none}
+.qr-video-wrap video{width:100%;display:block}
+.scan-line{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:scanline 2s linear infinite}
+@keyframes scanline{0%{top:0}100%{top:100%}}
+.record-view-header{background:linear-gradient(135deg,var(--green),var(--blue));color:white;border-radius:var(--radius);padding:24px;margin-bottom:14px;text-align:center}
+footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);background:var(--surface)}
+@media(max-width:600px){.content{padding:16px}.card{padding:16px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#F0FDF4,#F8FAFF,#EFF6FF)">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px 36px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(22,163,74,0.1)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,#16A34A,#1B4FD8);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px">🏥</div>
+      <strong style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.5px">AdaptON</strong>
+      <p style="font-size:13px;color:var(--muted);margin-top:6px">진료 내용 확인 서비스</p>
+      <span style="font-size:11px;background:#DCFCE7;color:var(--green);padding:3px 10px;border-radius:999px;font-weight:600;margin-top:6px;display:inline-block">🏥 환자 계정</span>
+    </div>
+    <div class="tabs-2">
+      <button class="tab-2 active" id="tabLoginBtn">로그인</button>
+      <button class="tab-2" id="tabSignupBtn">회원가입</button>
+    </div>
+    <div id="formLogin">
+      <div class="form-row"><label class="label">이메일</label><input type="email" class="input-field" id="loginEmail" placeholder="example@email.com"/></div>
+      <div class="form-row"><label class="label">비밀번호</label><input type="password" class="input-field" id="loginPw" placeholder="비밀번호 입력"/></div>
+      <div id="loginAlert"></div>
+      <button class="btn btn-green" id="btnLogin" style="width:100%;justify-content:center;padding:12px;font-size:15px;margin-top:8px">로그인</button>
+      <p style="text-align:center;font-size:13px;margin-top:14px"><a id="linkReset" href="#" style="color:var(--green);text-decoration:none">비밀번호 찾기</a></p>
+    </div>
+    <div id="formSignup" style="display:none">
+      <div class="form-row"><label class="label">이름</label><input type="text" class="input-field" id="signupName" placeholder="홍길동"/></div>
+      <div class="form-row"><label class="label">이메일</label><input type="email" class="input-field" id="signupEmail" placeholder="example@email.com"/></div>
+      <div class="form-row"><label class="label">비밀번호</label><input type="password" class="input-field" id="signupPw" placeholder="6자 이상"/></div>
+      <div id="signupAlert"></div>
+      <button class="btn btn-green" id="btnSignup" style="width:100%;justify-content:center;padding:12px;font-size:15px;margin-top:8px">회원가입</button>
+      <p style="text-align:center;font-size:12px;margin-top:10px;color:var(--muted)">가입 후 이메일 인증이 필요해요</p>
+    </div>
+    <div class="divider" style="margin-top:20px"><div class="divider-line"></div><span class="divider-text">또는</span><div class="divider-line"></div></div>
+    <button class="btn btn-ghost" id="btnGuest" style="width:100%;justify-content:center;padding:11px">👤 로그인 없이 보기 (저장 불가)</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appPage" style="display:none;flex-direction:column;min-height:100vh">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <span class="sidebar-logo">🏥 AdaptON</span>
+      <button class="sidebar-close" id="btnCloseSidebar">✕</button>
+    </div>
+    <div class="sidebar-nav">
+      <button class="sidebar-item active" data-page="home" id="sidebarHome"><span class="icon">🏠</span>홈</button>
+      <button class="sidebar-item" data-page="qrscan" id="sidebarQr"><span class="icon">📷</span>QR 스캔</button>
+      <button class="sidebar-item" data-page="saved" id="sidebarSaved"><span class="icon">📁</span>저장된 기록</button>
+      <button class="sidebar-item" data-page="calendar" id="sidebarCal"><span class="icon">📅</span>재진 캘린더</button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="sidebar-item" id="sidebarLogout" style="color:var(--red)"><span class="icon">🚪</span>로그아웃</button>
+    </div>
+  </nav>
+
+  <header class="app-header">
+    <button class="hamburger" id="btnHamburger"><span></span><span></span><span></span></button>
+    <span class="header-logo">🏥 AdaptON</span>
+    <span class="header-role">환자</span>
+    <div class="header-right">
+      <div class="user-btn" id="userBtn">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userName">-</span>
+        <span style="font-size:10px;color:var(--muted)">▾</span>
+      </div>
+      <div class="dropdown" id="userDropdown">
+        <button class="dropdown-item" id="ddHome">🏠 홈</button>
+        <button class="dropdown-item" id="ddSaved">📁 저장된 기록</button>
+        <button class="dropdown-item" id="ddCal">📅 재진 캘린더</button>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" id="ddLogout">🚪 로그아웃</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div id="page-home" class="screen active">
+      <div style="text-align:center;padding:56px 20px 40px;overflow:hidden;position:relative">
+        <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:500px;height:500px;background:radial-gradient(circle,rgba(22,163,74,0.07) 0%,transparent 70%);pointer-events:none"></div>
+        <div style="width:86px;height:86px;background:linear-gradient(135deg,#16A34A,#1B4FD8);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:42px;margin:0 auto 20px;box-shadow:0 12px 36px rgba(22,163,74,0.2)">🏥</div>
+        <h1 style="font-family:'DM Sans',sans-serif;font-size:40px;font-weight:700;color:var(--text);letter-spacing:-1.5px;margin-bottom:12px">Adapt<span style="color:var(--green)">ON</span></h1>
+        <p style="font-size:15px;color:var(--muted);max-width:400px;margin:0 auto 26px;line-height:1.7">의사 선생님의 설명을 쉬운 말로 확인하고<br>재진 일정을 관리하세요</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-green" id="homeQrBtn" style="padding:12px 24px;font-size:15px">📷 QR 스캔하기</button>
+          <button class="btn btn-outline" id="homeSavedBtn" style="padding:12px 24px;font-size:15px">📁 저장된 기록</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:40px">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:6px">이런 기능을 제공해요</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:22px">환자를 위한 맞춤 서비스</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
+          <div class="card" style="padding:20px;cursor:pointer" onclick="showPage('qrscan')">
+            <div style="font-size:26px;margin-bottom:10px">📷</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">QR 스캔</h3>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">의사에게 받은 QR로 진료 내용을 확인해요</p>
+          </div>
+          <div class="card" style="padding:20px;cursor:pointer" onclick="showPage('saved')">
+            <div style="font-size:26px;margin-bottom:10px">📁</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">저장된 기록</h3>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">저장한 진료 내용을 언제든 다시 봐요</p>
+          </div>
+          <div class="card" style="padding:20px;cursor:pointer" onclick="showPage('calendar')">
+            <div style="font-size:26px;margin-bottom:10px">📅</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">재진 캘린더</h3>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">다음 진료 일정을 등록하고 관리해요</p>
+          </div>
+          <div class="card" style="padding:20px">
+            <div style="font-size:26px;margin-bottom:10px">🔊</div>
+            <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">읽어주기</h3>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">진료 내용을 음성으로 들을 수 있어요</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="aboutSection" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:36px;margin-bottom:28px">
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:14px">AdaptON이란?</h2>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:12px">진료 시간은 짧고 의학 용어는 어렵습니다. AdaptON은 AI를 활용해 의사의 복잡한 설명을 누구나 이해할 수 있는 쉬운 말로 바꿔드려요.</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:28px">QR 코드 하나로 진료실에서 받은 내용을 스마트폰에서 확인하고, 재진 일정까지 관리할 수 있어요.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+          <div style="text-align:center"><div style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:700;color:var(--green)">49.3%</div><div style="font-size:11px;color:var(--muted);margin-top:4px">환자 평균<br>이해도</div></div>
+          <div style="text-align:center"><div style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:700;color:var(--green)">43%</div><div style="font-size:11px;color:var(--muted);margin-top:4px">전문 용어<br>사용 비율</div></div>
+          <div style="text-align:center"><div style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:700;color:var(--green)">3분</div><div style="font-size:11px;color:var(--muted);margin-top:4px">평균 외래<br>진료 시간</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR SCAN -->
+    <div id="page-qrscan" class="screen">
+      <div style="margin-bottom:20px">
+        <h2 style="font-size:20px;font-weight:700">📷 QR 스캔</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:2px">의사에게 받은 QR 코드를 스캔해요</p>
+      </div>
+      <div class="card" style="padding:20px">
+        <div id="qrVideoWrap" class="qr-video-wrap"><video id="qrVideo" autoplay playsinline muted></video><div class="scan-line"></div></div>
+        <div id="qrScanBox" class="qr-scan-box" id="qrScanBox">
+          <div style="font-size:44px;margin-bottom:12px">📷</div>
+          <p style="font-size:15px;font-weight:600;margin-bottom:6px">클릭해서 QR 스캔 시작</p>
+          <p style="font-size:13px;color:var(--muted)">카메라로 QR 코드를 비춰주세요</p>
+        </div>
+        <div id="qrBtns" style="display:none;margin-top:10px">
+          <button class="btn btn-danger btn-sm" id="btnStopScan" style="width:100%;justify-content:center">⏹ 스캔 중지</button>
+        </div>
+        <div id="qrScanResult"></div>
+      </div>
+      <div class="card" style="padding:20px">
+        <p style="font-size:14px;font-weight:600;margin-bottom:10px">🔗 링크 직접 입력</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">의사에게 받은 링크나 ID를 입력해도 돼요</p>
+        <div style="display:flex;gap:8px">
+          <input type="text" class="input-field" id="manualLinkInput" placeholder="링크 또는 기록 ID" style="flex:1"/>
+          <button class="btn btn-green btn-sm" id="btnManualLink">확인</button>
+        </div>
+        <div id="manualLinkAlert"></div>
+      </div>
+    </div>
+
+    <!-- VIEW -->
+    <div id="page-view" class="screen">
+      <div id="view-loading" style="text-align:center;padding:60px 0"><div class="loader"></div><p style="color:var(--muted)">불러오는 중...</p></div>
+      <div id="view-expired" style="display:none;text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px">⏰</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">링크가 만료되었어요</h2>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:20px">의사에게 다시 QR을 요청해주세요</p>
+        <button class="btn btn-outline" onclick="showPage('home')">홈으로</button>
+      </div>
+      <div id="view-notfound" style="display:none;text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px">🔍</div>
+        <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">기록을 찾을 수 없어요</h2>
+        <button class="btn btn-outline" onclick="showPage('qrscan')" style="margin-top:16px">다시 스캔</button>
+      </div>
+      <div id="view-content" style="display:none">
+        <div class="record-view-header">
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:6px">📋 진료 내용</h2>
+          <p id="viewDoctorInfo" style="font-size:13px;opacity:0.9">-</p>
+        </div>
+        <div class="card" style="padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <p style="font-size:13px;font-weight:500;color:var(--orange)">⏱️ 남은 시간: <span id="viewTimerText">-</span></p>
+            <span id="viewStatusBadge" class="badge badge-green">유효</span>
+          </div>
+          <div class="timer-bar"><div class="timer-fill" id="viewTimerFill" style="width:100%"></div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" id="btnSpeak">🔊 읽어주기</button>
+          <button class="btn btn-outline btn-sm" id="btnStop">⏹ 중지</button>
+          <button class="btn btn-outline btn-sm" id="btnCopy">📋 복사</button>
+          <button class="btn btn-outline btn-sm" id="btnDownload">💾 다운로드</button>
+        </div>
+        <div class="card"><p style="font-size:12px;color:var(--muted);margin-bottom:10px">💬 쉬운말 변환 결과</p><div class="result-box" id="viewResult"></div></div>
+        <div class="card" id="saveSection">
+          <p style="font-size:15px;font-weight:600;margin-bottom:6px">📁 내 계정에 저장하기</p>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:12px">저장하면 언제든지 다시 볼 수 있어요</p>
+          <div class="form-row"><label class="label">재진 예정일 (선택)</label><input type="date" class="input-field" id="revisitDate"/></div>
+          <div class="form-row"><label class="label">메모 (선택)</label><input type="text" class="input-field" id="revisitMemo" placeholder="예: 혈액검사 결과 확인"/></div>
+          <button class="btn btn-green" id="btnSaveRecord" style="width:100%;justify-content:center;padding:12px;font-size:15px">내 계정에 저장</button>
+          <div id="saveAlert"></div>
+        </div>
+        <div class="card" id="guestSaveSection" style="display:none">
+          <p style="font-size:14px;font-weight:500;margin-bottom:10px">📁 저장하려면 로그인이 필요해요</p>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-green btn-sm" id="btnGuestSignup">회원가입</button>
+            <button class="btn btn-outline btn-sm" id="btnGuestLogin2">로그인</button>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="showPage('home')" style="width:100%;justify-content:center;margin-top:4px">🏠 홈으로</button>
+      </div>
+    </div>
+
+    <!-- SAVED -->
+    <div id="page-saved" class="screen">
+      <div id="savedGuestBlock" style="display:none;text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px">🔒</div>
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:10px">해당 기능 사용을 위해선 로그인이 필요합니다</h2>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:24px">로그인하면 저장된 진료 기록을 확인할 수 있어요</p>
+        <button class="btn btn-green" id="btnSavedGuestLogin" style="padding:12px 28px;font-size:15px">로그인 하러 가기</button>
+      </div>
+      <div id="savedContent">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div><h2 style="font-size:20px;font-weight:700">📁 저장된 기록</h2><p style="font-size:13px;color:var(--muted);margin-top:2px">내 계정에 저장한 진료 내용이에요</p></div>
+          <button class="btn btn-outline btn-sm" id="btnRefreshSaved">🔄 새로고침</button>
+        </div>
+        <div id="savedList"></div>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div id="page-calendar" class="screen">
+      <div id="calGuestBlock" style="display:none;text-align:center;padding:60px 20px">
+        <div style="font-size:48px;margin-bottom:16px">🔒</div>
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:10px">해당 기능 사용을 위해선 로그인이 필요합니다</h2>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:24px">로그인하면 재진 캘린더를 사용할 수 있어요</p>
+        <button class="btn btn-green" id="btnCalGuestLogin" style="padding:12px 28px;font-size:15px">로그인 하러 가기</button>
+      </div>
+      <div id="calContent">
+      <div style="margin-bottom:16px"><h2 style="font-size:20px;font-weight:700">📅 재진 캘린더</h2><p style="font-size:13px;color:var(--muted);margin-top:2px">다음 진료 일정을 한눈에 확인해요</p></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <button class="btn btn-outline btn-sm" id="btnPrevMonth">‹ 이전</button>
+        <h3 style="font-size:16px;font-weight:600" id="calTitle"></h3>
+        <button class="btn btn-outline btn-sm" id="btnNextMonth">다음 ›</button>
+      </div>
+      <div class="card" style="padding:14px">
+        <div class="cal-header">
+          <div class="cal-day-label" style="color:var(--red)">일</div>
+          <div class="cal-day-label">월</div><div class="cal-day-label">화</div>
+          <div class="cal-day-label">수</div><div class="cal-day-label">목</div>
+          <div class="cal-day-label">금</div>
+          <div class="cal-day-label" style="color:var(--blue)">토</div>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div id="calEvents" style="margin-top:14px"></div>
+      <div class="card" style="margin-top:16px">
+        <p style="font-size:14px;font-weight:600;margin-bottom:12px">➕ 재진 일정 직접 추가</p>
+        <div class="form-row"><label class="label">재진 예정일</label><input type="date" class="input-field" id="addRevisitDate"/></div>
+        <div class="form-row"><label class="label">메모</label><input type="text" class="input-field" id="addRevisitMemo" placeholder="예: 내과 정기 검진"/></div>
+        <button class="btn btn-green" id="btnAddRevisit" style="width:100%;justify-content:center">일정 추가</button>
+        <div id="addRevisitAlert"></div>
+      </div>
+      </div><!-- /calContent -->
+    </div>
+
+  </div>
+  <footer>AdaptON 환자 포털 — 진료 내용 확인 서비스</footer>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         sendEmailVerification, sendPasswordResetEmail, onAuthStateChanged, signOut,
+         updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyCtuiS-ZbN-IYgbU2uaAwq2yHcRWpQs6UY",
+  authDomain:"challenge-82d30.firebaseapp.com",
+  projectId:"challenge-82d30",
+  storageBucket:"challenge-82d30.firebasestorage.app",
+  messagingSenderId:"725547008897",
+  appId:"1:725547008897:web:beb24f4d6ba46ef7451e80"
+};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let currentUser=null,isGuest=false,currentRecord=null,timerInterval=null;
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+let qrStream=null,qrScanInterval=null;
+const urlParams=new URLSearchParams(window.location.search);
+const recordId=urlParams.get('id');
+
+function showAlertEl(id,type,msg){const el=document.getElementById(id);if(el)el.innerHTML=`<div class="alert alert-${type}">${msg}</div>`;}
+function getInitial(n){return(n||'?').charAt(0).toUpperCase();}
+
+function enterApp(user,guest=false){
+  isGuest=guest;currentUser=user;
+  document.getElementById('loginPage').style.display='none';
+  const ap=document.getElementById('appPage');ap.style.display='flex';ap.style.flexDirection='column';ap.style.minHeight='100vh';
+  const name=guest?'게스트':(user?.displayName||user?.email||'');
+  document.getElementById('userName').textContent=name;
+  document.getElementById('userAvatar').textContent=getInitial(name);
+  document.getElementById('saveSection').style.display=guest?'none':'block';
+  document.getElementById('guestSaveSection').style.display=guest?'block':'none';
+  if(recordId){showPage('view');loadRecord(recordId);}
+  else showPage('home');
+}
+
+async function doLogout(){
+  isGuest=false;currentUser=null;stopQrScan();
+  if(timerInterval)clearInterval(timerInterval);
+  try{await signOut(auth);}catch(e){}
+  document.getElementById('appPage').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
+}
+
+onAuthStateChanged(auth,user=>{if(user&&!isGuest){if(!user.emailVerified){signOut(auth);return;}enterApp(user,false);}});
+
+document.getElementById('tabLoginBtn').addEventListener('click',()=>{document.getElementById('tabLoginBtn').classList.add('active');document.getElementById('tabSignupBtn').classList.remove('active');document.getElementById('formLogin').style.display='block';document.getElementById('formSignup').style.display='none';});
+document.getElementById('tabSignupBtn').addEventListener('click',()=>{document.getElementById('tabSignupBtn').classList.add('active');document.getElementById('tabLoginBtn').classList.remove('active');document.getElementById('formSignup').style.display='block';document.getElementById('formLogin').style.display='none';});
+
+document.getElementById('btnLogin').addEventListener('click',async()=>{
+  const email=document.getElementById('loginEmail').value.trim(),pw=document.getElementById('loginPw').value;
+  if(!email||!pw){showAlertEl('loginAlert','error','이메일과 비밀번호를 입력해주세요.');return;}
+  try{const cred=await signInWithEmailAndPassword(auth,email,pw);if(!cred.user.emailVerified){await signOut(auth);showAlertEl('loginAlert','error','이메일 인증이 필요해요.');return;}enterApp(cred.user,false);}
+  catch(e){showAlertEl('loginAlert','error',e.code==='auth/invalid-credential'?'이메일 또는 비밀번호가 틀렸어요.':e.message);}
+});
+
+document.getElementById('btnSignup').addEventListener('click',async()=>{
+  const name=document.getElementById('signupName').value.trim(),email=document.getElementById('signupEmail').value.trim(),pw=document.getElementById('signupPw').value;
+  if(!name||!email||!pw){showAlertEl('signupAlert','error','모든 항목을 입력해주세요.');return;}
+  if(pw.length<6){showAlertEl('signupAlert','error','비밀번호는 6자 이상이어야 해요.');return;}
+  try{const cred=await createUserWithEmailAndPassword(auth,email,pw);await updateProfile(cred.user,{displayName:name});await sendEmailVerification(cred.user);await signOut(auth);showAlertEl('signupAlert','success','✅ 가입 완료! 이메일 인증 메일을 확인해주세요.');setTimeout(()=>document.getElementById('tabLoginBtn').click(),2000);}
+  catch(e){showAlertEl('signupAlert','error',e.code==='auth/email-already-in-use'?'이미 사용 중인 이메일이에요.':e.message);}
+});
+
+document.getElementById('linkReset').addEventListener('click',async(e)=>{e.preventDefault();const email=document.getElementById('loginEmail').value.trim();if(!email){showAlertEl('loginAlert','error','이메일을 먼저 입력해주세요.');return;}try{await sendPasswordResetEmail(auth,email);showAlertEl('loginAlert','success','✅ 재설정 이메일을 보냈어요!');}catch(e){showAlertEl('loginAlert','error','전송 실패.');}});
+document.getElementById('btnGuest').addEventListener('click',()=>enterApp(null,true));
+document.getElementById('btnGuestSignup').addEventListener('click',()=>{isGuest=false;document.getElementById('appPage').style.display='none';document.getElementById('loginPage').style.display='flex';document.getElementById('tabSignupBtn').click();});
+document.getElementById('btnGuestLogin2').addEventListener('click',()=>{isGuest=false;document.getElementById('appPage').style.display='none';document.getElementById('loginPage').style.display='flex';});
+document.getElementById('btnCalGuestLogin').addEventListener('click',()=>{isGuest=false;document.getElementById('appPage').style.display='none';document.getElementById('loginPage').style.display='flex';});
+document.getElementById('btnSavedGuestLogin').addEventListener('click',()=>{isGuest=false;document.getElementById('appPage').style.display='none';document.getElementById('loginPage').style.display='flex';});
+
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('open');}
+document.getElementById('btnHamburger').addEventListener('click',openSidebar);
+document.getElementById('btnCloseSidebar').addEventListener('click',closeSidebar);
+document.getElementById('sidebarOverlay').addEventListener('click',closeSidebar);
+document.querySelectorAll('.sidebar-item[data-page]').forEach(btn=>btn.addEventListener('click',()=>showPage(btn.dataset.page)));
+document.getElementById('sidebarLogout').addEventListener('click',doLogout);
+
+document.getElementById('userBtn').addEventListener('click',(e)=>{e.stopPropagation();document.getElementById('userDropdown').classList.toggle('open');});
+document.addEventListener('click',()=>document.getElementById('userDropdown').classList.remove('open'));
+document.getElementById('ddHome').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');showPage('home');});
+document.getElementById('ddSaved').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');showPage('saved');});
+document.getElementById('ddCal').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');showPage('calendar');});
+document.getElementById('ddLogout').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');doLogout();});
+
+window.showPage=function(name){
+  document.querySelectorAll('[id^="page-"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name)?.classList.add('active');
+  document.querySelectorAll('.sidebar-item[data-page]').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.sidebar-item[data-page="${name}"]`)?.classList.add('active');
+  closeSidebar();window.scrollTo({top:0,behavior:'smooth'});
+  if(name==='saved'){
+    if(isGuest){
+      document.getElementById('savedGuestBlock').style.display='block';
+      document.getElementById('savedContent').style.display='none';
+    } else {
+      document.getElementById('savedGuestBlock').style.display='none';
+      document.getElementById('savedContent').style.display='block';
+      renderSavedRecords();
+    }
+  }
+  if(name==='calendar'){
+    if(isGuest){
+      document.getElementById('calGuestBlock').style.display='block';
+      document.getElementById('calContent').style.display='none';
+    } else {
+      document.getElementById('calGuestBlock').style.display='none';
+      document.getElementById('calContent').style.display='block';
+      renderCalendar();
+    }
+  }
+  if(name!=='qrscan')stopQrScan();
+};
+
+document.getElementById('homeQrBtn').addEventListener('click',()=>showPage('qrscan'));
+document.getElementById('homeSavedBtn').addEventListener('click',()=>showPage('saved'));
+
+// QR 스캔
+async function startQrScan(){
+  if(qrStream)return;
+  document.getElementById('qrScanBox').style.display='none';
+  document.getElementById('qrVideoWrap').style.display='block';
+  document.getElementById('qrBtns').style.display='block';
+  showAlertEl('qrScanResult','info','QR 코드를 화면 중앙에 맞춰주세요');
+  try{
+    qrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    const video=document.getElementById('qrVideo');video.srcObject=qrStream;await video.play();
+    const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');
+    qrScanInterval=setInterval(()=>{
+      if(video.readyState!==video.HAVE_ENOUGH_DATA)return;
+      canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code=window.jsQR?window.jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'dontInvert'}):null;
+      if(code&&code.data){stopQrScan();processQrData(code.data);}
+    },300);
+  }catch(e){stopQrScan();showAlertEl('qrScanResult','error','카메라 접근이 거부됐어요. 브라우저에서 카메라 권한을 허용해주세요.');}
+}
+
+document.getElementById('qrScanBox').addEventListener('click',startQrScan);
+document.getElementById('btnStopScan').addEventListener('click',stopQrScan);
+
+function stopQrScan(){
+  if(qrScanInterval){clearInterval(qrScanInterval);qrScanInterval=null;}
+  if(qrStream){qrStream.getTracks().forEach(t=>t.stop());qrStream=null;}
+  document.getElementById('qrVideoWrap').style.display='none';
+  document.getElementById('qrScanBox').style.display='block';
+  document.getElementById('qrBtns').style.display='none';
+}
+
+function processQrData(data){
+  try{const url=new URL(data);const id=url.searchParams.get('id');if(id){showPage('view');loadRecord(id);return;}}catch(e){}
+  if(data&&data.length>5){showPage('view');loadRecord(data);return;}
+  showAlertEl('qrScanResult','error','유효하지 않은 QR 코드예요.');
+}
+
+document.getElementById('btnManualLink').addEventListener('click',()=>{
+  const val=document.getElementById('manualLinkInput').value.trim();
+  if(!val){showAlertEl('manualLinkAlert','error','링크 또는 ID를 입력해주세요.');return;}
+  processQrData(val);
+});
+
+async function loadRecord(id){
+  ['view-loading','view-expired','view-notfound','view-content'].forEach(i=>{const el=document.getElementById(i);if(el)el.style.display='none';});
+  document.getElementById('view-loading').style.display='block';
+  try{
+    const snap=await getDoc(doc(db,'shared_records',id));
+    if(!snap.exists()){document.getElementById('view-loading').style.display='none';document.getElementById('view-notfound').style.display='block';return;}
+    const data={id:snap.id,...snap.data()};
+    if(data.expiresAt&&Date.now()>data.expiresAt){document.getElementById('view-loading').style.display='none';document.getElementById('view-expired').style.display='block';return;}
+    currentRecord=data;
+    document.getElementById('view-loading').style.display='none';
+    document.getElementById('view-content').style.display='block';
+    document.getElementById('viewDoctorInfo').textContent=`담당: ${data.doctorName||'-'} | 환자: ${data.patientName||'-'}`;
+    document.getElementById('viewResult').textContent=data.result||'';
+    startViewTimer(data.expiresAt);
+  }catch(e){document.getElementById('view-loading').style.display='none';document.getElementById('view-notfound').style.display='block';}
+}
+
+function startViewTimer(expiresAt){
+  if(timerInterval)clearInterval(timerInterval);
+  function update(){const r=expiresAt-Date.now();if(r<=0){clearInterval(timerInterval);document.getElementById('viewTimerText').textContent='만료됨';document.getElementById('viewTimerFill').style.width='0%';return;}const h=Math.floor(r/3600000),m=Math.floor((r%3600000)/60000);document.getElementById('viewTimerText').textContent=`${h}시간 ${m}분`;const pct=(r/(24*60*60*1000))*100;document.getElementById('viewTimerFill').style.width=pct+'%';document.getElementById('viewTimerFill').style.background=pct>50?'var(--green)':pct>20?'var(--orange)':'var(--red)';}
+  update();timerInterval=setInterval(update,30000);
+}
+
+document.getElementById('btnSpeak').addEventListener('click',()=>{const t=document.getElementById('viewResult').textContent;if(!t)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=0.85;speechSynthesis.speak(u);});
+document.getElementById('btnStop').addEventListener('click',()=>speechSynthesis.cancel());
+document.getElementById('btnCopy').addEventListener('click',()=>{const t=document.getElementById('viewResult').textContent;if(!t)return;navigator.clipboard.writeText(t).then(()=>alert('복사되었어요!'));});
+document.getElementById('btnDownload').addEventListener('click',()=>{if(!currentRecord)return;const content=`[진료 내용]\n담당: ${currentRecord.doctorName||'-'}\n환자: ${currentRecord.patientName||'-'}\n\n[변환 결과]\n${currentRecord.result}`;const blob=new Blob([content],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='진료내용.txt';a.click();});
+
+document.getElementById('btnSaveRecord').addEventListener('click',async()=>{
+  if(!currentUser||isGuest){alert('로그인이 필요해요.');return;}
+  if(!currentRecord){alert('저장할 기록이 없어요.');return;}
+  const revisitDate=document.getElementById('revisitDate').value;
+  const revisitMemo=document.getElementById('revisitMemo').value.trim();
+  try{
+    await addDoc(collection(db,'patient_records'),{uid:currentUser.uid,sharedRecordId:currentRecord.id,doctorName:currentRecord.doctorName||'-',patientName:currentRecord.patientName||'-',original:currentRecord.original||'',result:currentRecord.result||'',revisitDate,revisitMemo,savedAt:Date.now(),originalCreatedAt:currentRecord.createdAt});
+    showAlertEl('saveAlert','success','✅ 저장되었어요!');
+    document.getElementById('btnSaveRecord').disabled=true;document.getElementById('btnSaveRecord').textContent='✅ 저장 완료';
+    if(revisitDate)renderCalendar();
+  }catch(e){showAlertEl('saveAlert','error','저장 실패: '+e.message);}
+});
+
+async function getSavedRecords(){if(!currentUser||isGuest)return[];try{const q=query(collection(db,'patient_records'),where('uid','==',currentUser.uid));const snap=await getDocs(q);return snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));}catch(e){return[];}}
+
+async function renderSavedRecords(){
+  const list=document.getElementById('savedList');
+  if(!currentUser||isGuest){list.innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--muted)">로그인이 필요해요</div>';return;}
+  list.innerHTML='<div class="card" style="text-align:center;padding:30px;color:var(--muted)">불러오는 중...</div>';
+  const records=await getSavedRecords();
+  if(!records.length){list.innerHTML='<div class="card" style="text-align:center;padding:40px;color:var(--muted)">📭 저장된 기록이 없어요<br><small style="display:block;margin-top:6px">QR 스캔 후 저장하면 여기에 나타나요</small></div>';return;}
+  list.innerHTML=records.map((r,i)=>`
+    <div class="saved-item" data-idx="${i}">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:14px;font-weight:500">👤 ${r.patientName}</span>
+        <span style="font-size:12px;color:var(--muted)">${new Date(r.savedAt).toLocaleDateString('ko-KR')}</span>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:4px">담당: ${r.doctorName}</p>
+      ${r.revisitDate?`<span class="badge badge-orange" style="margin-bottom:6px">🔔 재진 ${r.revisitDate}</span>`:''}
+      <div style="font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.result||'').substring(0,60)}...</div>
+      <div class="saved-detail" id="saved-${i}">
+        <hr style="margin:10px 0;border:none;border-top:1px solid var(--border)">
+        <div class="result-box" style="font-size:14px;margin-bottom:10px">${r.result||''}</div>
+        ${r.revisitMemo?`<p style="font-size:13px;color:var(--muted);margin-bottom:8px">📝 ${r.revisitMemo}</p>`:''}
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="speakText('${encodeURIComponent(r.result||'')}')">🔊 읽기</button>
+          <button class="btn btn-danger btn-sm" data-id="${r.id}">🗑️ 삭제</button>
+        </div>
+      </div>
+    </div>`).join('');
+  list.addEventListener('click',async(e)=>{
+    const delBtn=e.target.closest('[data-id]');
+    if(delBtn){e.stopPropagation();if(!confirm('삭제할까요?'))return;await deleteDoc(doc(db,'patient_records',delBtn.dataset.id));renderSavedRecords();renderCalendar();return;}
+    const item=e.target.closest('.saved-item');if(item)document.getElementById('saved-'+item.dataset.idx)?.classList.toggle('open');
+  });
+}
+document.getElementById('btnRefreshSaved').addEventListener('click',renderSavedRecords);
+
+window.speakText=(encoded)=>{const text=decodeURIComponent(encoded);speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=0.85;speechSynthesis.speak(u);};
+
+document.getElementById('btnPrevMonth').addEventListener('click',()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();});
+document.getElementById('btnNextMonth').addEventListener('click',()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();});
+
+async function renderCalendar(){
+  if(isGuest){
+    document.getElementById('calGrid').innerHTML='';
+    document.getElementById('calEvents').innerHTML='';
+    document.getElementById('calTitle').textContent='';
+    return;
+  }
+  const records=await getSavedRecords();const events={};
+  records.forEach(r=>{if(r.revisitDate){if(!events[r.revisitDate])events[r.revisitDate]=[];events[r.revisitDate].push(r);}});
+  document.getElementById('calTitle').textContent=`${calYear}년 ${calMonth+1}월`;
+  const first=new Date(calYear,calMonth,1).getDay(),last=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date().toISOString().split('T')[0];
+  let cells='';
+  for(let i=0;i<first;i++)cells+=`<div class="cal-cell other-month"></div>`;
+  for(let d=1;d<=last;d++){const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;cells+=`<div class="cal-cell${ds===today?' today':''}${events[ds]?' has-event':''}" data-date="${ds}">${d}</div>`;}
+  document.getElementById('calGrid').innerHTML=cells;
+  const calGridEl = document.getElementById('calGrid');
+  calGridEl.replaceWith(calGridEl.cloneNode(true)); // 이벤트 초기화
+  document.getElementById('calGrid').addEventListener('click',(e)=>{
+    const cell=e.target.closest('.cal-cell[data-date]');
+    if(!cell)return;
+    const recs=events[cell.dataset.date]||[];
+    if(!recs.length)return;
+    alert(`📅 ${cell.dataset.date} 재진 예정:\n`+recs.map(r=>`• ${r.sharedRecordId==='manual'?(r.revisitMemo||'메모 없음'):(r.doctorName+(r.revisitMemo?'\n  메모 내용: '+r.revisitMemo:''))}`).join('\n'));
+  });
+  const mk=`${calYear}-${String(calMonth+1).padStart(2,'0')}`;const me=Object.entries(events).filter(([k])=>k.startsWith(mk));
+  const ev=document.getElementById('calEvents');
+  if(!me.length){ev.innerHTML='<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">이번 달 예정된 재진이 없어요</div>';return;}
+  ev.innerHTML='<h3 style="font-size:14px;font-weight:600;margin-bottom:10px">🔔 이번 달 재진 예정</h3>'+me.map(([date,rs])=>rs.map(r=>`<div class="card" style="padding:12px 16px;margin-bottom:8px"><div style="display:flex;justify-content:space-between"><span style="font-size:14px;font-weight:500">🩺 ${r.doctorName}</span><span class="badge badge-orange">${date}</span></div>${r.revisitMemo?`<p style="font-size:12px;color:var(--muted);margin-top:4px">📝 ${r.revisitMemo}</p>`:''}</div>`).join('')).join('');
+}
+
+document.getElementById('btnAddRevisit').addEventListener('click',async()=>{
+  if(!currentUser||isGuest){showAlertEl('addRevisitAlert','error','로그인이 필요해요.');return;}
+  const date=document.getElementById('addRevisitDate').value,memo=document.getElementById('addRevisitMemo').value.trim();
+  if(!date){showAlertEl('addRevisitAlert','error','날짜를 선택해주세요.');return;}
+  try{
+    await addDoc(collection(db,'patient_records'),{uid:currentUser.uid,sharedRecordId:'manual',doctorName:'직접 입력',patientName:currentUser.displayName||'',original:'',result:'',revisitDate:date,revisitMemo:memo,savedAt:Date.now()});
+    showAlertEl('addRevisitAlert','success','✅ 일정이 추가되었어요!');
+    document.getElementById('addRevisitDate').value='';document.getElementById('addRevisitMemo').value='';
+    renderCalendar();
+  }catch(e){showAlertEl('addRevisitAlert','error','추가 실패: '+e.message);}
+});
+</script>
+</body>
+</html>
