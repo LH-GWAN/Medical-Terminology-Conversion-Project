@@ -149,6 +149,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
       <button class="sidebar-item" data-page="qrscan" id="sidebarQr"><span class="icon">📷</span>QR 스캔</button>
       <button class="sidebar-item" data-page="saved" id="sidebarSaved"><span class="icon">📁</span>저장된 기록</button>
       <button class="sidebar-item" data-page="calendar" id="sidebarCal"><span class="icon">📅</span>재진 캘린더</button>
+      <button class="sidebar-item" data-page="settings" id="sidebarSettings"><span class="icon">⚙️</span>번역 설정</button>
     </div>
     <div class="sidebar-footer">
       <button class="sidebar-item" id="sidebarLogout" style="color:var(--red)"><span class="icon">🚪</span>로그아웃</button>
@@ -169,6 +170,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
         <button class="dropdown-item" id="ddHome">🏠 홈</button>
         <button class="dropdown-item" id="ddSaved">📁 저장된 기록</button>
         <button class="dropdown-item" id="ddCal">📅 재진 캘린더</button>
+        <button class="dropdown-item" id="ddSettings">⚙️ 번역 설정</button>
         <div class="dropdown-divider"></div>
         <button class="dropdown-item danger" id="ddLogout">🚪 로그아웃</button>
       </div>
@@ -182,7 +184,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
       <div style="text-align:center;padding:56px 20px 40px;overflow:hidden;position:relative">
         <div style="position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:500px;height:500px;background:radial-gradient(circle,rgba(22,163,74,0.07) 0%,transparent 70%);pointer-events:none"></div>
         <div style="width:86px;height:86px;background:linear-gradient(135deg,#16A34A,#1B4FD8);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:42px;margin:0 auto 20px;box-shadow:0 12px 36px rgba(22,163,74,0.2)">🏥</div>
-        <h1 style="font-family:'DM Sans',sans-serif;font-size:40px;font-weight:700;color:var(--text);letter-spacing:-1.5px;margin-bottom:12px">Adapt<span style="color:var(--green)">ON</span></h1>
+        <h1 style="font-family:'DM Sans',sans-serif;font-size:40px;font-weight:700;color:var(--text);letter-spacing:-1.5px;margin-bottom:12px">Came<span style="color:var(--green)">le</span>ON</h1>
         <p style="font-size:15px;color:var(--muted);max-width:400px;margin:0 auto 26px;line-height:1.7">의사 선생님의 설명을 쉬운 말로 확인하고<br>재진 일정을 관리하세요</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
           <button class="btn btn-green" id="homeQrBtn" style="padding:12px 24px;font-size:15px">📷 QR 스캔하기</button>
@@ -290,7 +292,29 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
           <button class="btn btn-outline btn-sm" id="btnCopy">📋 복사</button>
           <button class="btn btn-outline btn-sm" id="btnDownload">💾 다운로드</button>
         </div>
-        <div class="card"><p style="font-size:12px;color:var(--muted);margin-bottom:10px">💬 쉬운말 변환 결과</p><div class="result-box" id="viewResult"></div></div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <p style="font-size:12px;color:var(--muted)">💬 쉬운말 변환 결과</p>
+            <div style="display:flex;gap:6px;align-items:center">
+              <select class="input-field" id="translateLang" style="width:auto;padding:6px 10px;font-size:12px">
+                <option value="English">🇺🇸 영어</option>
+                <option value="Chinese">🇨🇳 중국어</option>
+                <option value="Vietnamese">🇻🇳 베트남어</option>
+                <option value="Japanese">🇯🇵 일본어</option>
+              </select>
+              <button class="btn btn-outline btn-sm" id="btnTranslate">🌐 번역 보기</button>
+            </div>
+          </div>
+          <div class="result-box" id="viewResult"></div>
+          <div id="translateArea" style="display:none;margin-top:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span class="badge badge-blue" id="translateLangBadge">번역 결과</span>
+              <button class="btn btn-outline btn-sm" id="btnTranslateClose" style="padding:4px 10px;font-size:12px">닫기</button>
+            </div>
+            <div class="result-box" id="translateResult" style="border-color:var(--blue-mid)"></div>
+          </div>
+          <div id="translateAlert"></div>
+        </div>
         <div class="card" id="saveSection">
           <p style="font-size:15px;font-weight:600;margin-bottom:6px">📁 내 계정에 저장하기</p>
           <p style="font-size:13px;color:var(--muted);margin-bottom:12px">저장하면 언제든지 다시 볼 수 있어요</p>
@@ -361,6 +385,27 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
         <div id="addRevisitAlert"></div>
       </div>
       </div><!-- /calContent -->
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="screen">
+      <div style="margin-bottom:20px">
+        <h2 style="font-size:20px;font-weight:700">⚙️ 번역 설정</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:2px">진료 결과를 외국어로 번역할 때 사용할 API 키를 설정해요</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:16px">🔑 Google Gemini API 키</h3>
+        <div class="form-row">
+          <label class="label">API 키</label>
+          <input type="password" class="input-field" id="translateApiKeyInput" placeholder="AIzaSy..." />
+          <p style="font-size:12px;color:var(--muted);margin-top:5px">👉 <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--blue)">aistudio.google.com</a>에서 무료로 발급받을 수 있어요</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-green" id="btnSaveTranslateKey">저장</button>
+          <button class="btn btn-outline" id="btnClearTranslateKey">삭제</button>
+        </div>
+        <div id="translateSettingsAlert"></div>
+      </div>
     </div>
 
   </div>
@@ -457,6 +502,7 @@ document.addEventListener('click',()=>document.getElementById('userDropdown').cl
 document.getElementById('ddHome').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');showPage('home');});
 document.getElementById('ddSaved').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');showPage('saved');});
 document.getElementById('ddCal').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');showPage('calendar');});
+document.getElementById('ddSettings').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');showPage('settings');});
 document.getElementById('ddLogout').addEventListener('click',()=>{document.getElementById('userDropdown').classList.remove('open');doLogout();});
 
 window.showPage=function(name){
@@ -484,6 +530,9 @@ window.showPage=function(name){
       document.getElementById('calContent').style.display='block';
       renderCalendar();
     }
+  }
+  if(name==='settings'){
+    document.getElementById('translateApiKeyInput').value = localStorage.getItem('adapton_translate_key')||'';
   }
   if(name!=='qrscan')stopQrScan();
 };
@@ -549,9 +598,82 @@ async function loadRecord(id){
     document.getElementById('view-content').style.display='block';
     document.getElementById('viewDoctorInfo').textContent=`담당: ${data.doctorName||'-'} | 환자: ${data.patientName||'-'}`;
     document.getElementById('viewResult').textContent=data.result||'';
+    // 번역 영역 초기화
+    document.getElementById('translateArea').style.display='none';
+    document.getElementById('translateResult').textContent='';
+    document.getElementById('translateAlert').innerHTML='';
     startViewTimer(data.expiresAt);
   }catch(e){document.getElementById('view-loading').style.display='none';document.getElementById('view-notfound').style.display='block';}
 }
+
+// ── 번역 기능
+const LANG_NAMES = { English:'영어', Chinese:'중국어', Vietnamese:'베트남어', Japanese:'일본어' };
+const LANG_FLAGS = { English:'🇺🇸', Chinese:'🇨🇳', Vietnamese:'🇻🇳', Japanese:'🇯🇵' };
+
+document.getElementById('btnTranslate').addEventListener('click', async () => {
+  const text = document.getElementById('viewResult').textContent;
+  if (!text) return;
+  const apiKey = localStorage.getItem('adapton_translate_key');
+  if (!apiKey) {
+    if (confirm('번역을 사용하려면 API 키가 필요해요. 설정 페이지로 이동할까요?')) {
+      showPage('settings');
+    }
+    return;
+  }
+  const targetLang = document.getElementById('translateLang').value;
+  const btn = document.getElementById('btnTranslate');
+  const originalText = btn.textContent;
+  btn.textContent = '번역 중...';
+  btn.disabled = true;
+  showAlertEl('translateAlert', 'info', '번역을 요청하고 있어요...');
+
+  const prompt = `Translate the following Korean medical explanation into ${targetLang}.
+Keep the same structure and emojis (📋 🔍 ⚠️ 💊) as in the original.
+Keep it simple and easy to understand for a patient, medically accurate.
+
+${text}`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.3, maxOutputTokens:1024} }) }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const translated = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!translated) throw new Error('번역 결과가 비어있어요.');
+
+    document.getElementById('translateResult').textContent = translated;
+    document.getElementById('translateLangBadge').textContent = `${LANG_FLAGS[targetLang]} ${LANG_NAMES[targetLang]} 번역`;
+    document.getElementById('translateArea').style.display = 'block';
+    document.getElementById('translateAlert').innerHTML = '';
+    document.getElementById('translateArea').scrollIntoView({behavior:'smooth', block:'nearest'});
+  } catch(e) {
+    showAlertEl('translateAlert', 'error', '번역 실패: ' + e.message);
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('btnTranslateClose').addEventListener('click', () => {
+  document.getElementById('translateArea').style.display = 'none';
+});
+
+// ── 번역용 API 키 설정
+document.getElementById('btnSaveTranslateKey').addEventListener('click', () => {
+  const key = document.getElementById('translateApiKeyInput').value.trim();
+  if (!key) { showAlertEl('translateSettingsAlert','error','키를 입력해주세요.'); return; }
+  if (!key.startsWith('AIza')) { showAlertEl('translateSettingsAlert','error','Gemini API 키는 "AIza"로 시작해요.'); return; }
+  localStorage.setItem('adapton_translate_key', key);
+  showAlertEl('translateSettingsAlert','success','✅ 저장되었어요!');
+});
+document.getElementById('btnClearTranslateKey').addEventListener('click', () => {
+  localStorage.removeItem('adapton_translate_key');
+  document.getElementById('translateApiKeyInput').value='';
+  showAlertEl('translateSettingsAlert','success','키가 삭제되었어요.');
+});
 
 function startViewTimer(expiresAt){
   if(timerInterval)clearInterval(timerInterval);
